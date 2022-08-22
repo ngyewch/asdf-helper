@@ -10,10 +10,6 @@ tasks:
     desc: Build
     cmds:
       - goreleaser --snapshot --rm-dist
-    sources:
-      - .goreleaser.yml
-      - go.mod
-      - ./**/*.go
 
   dependencyUpdates:
     desc: Show dependency updates
