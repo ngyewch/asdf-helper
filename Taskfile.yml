@@ -1,0 +1,25 @@
+version: '3'
+
+tasks:
+  clean:
+    desc: Clean
+    cmds:
+      - rm -rf dist
+
+  build:
+    desc: Build
+    cmds:
+      - goreleaser --snapshot --rm-dist
+    sources:
+      - .goreleaser.yml
+      - go.mod
+      - ./**/*.go
+
+  dependencyUpdates:
+    desc: Show dependency updates
+    cmds:
+      - go list -u -m -json all | docker run --rm -i psampaz/go-mod-outdated -update -direct
+
+  build-via-earthly:
+    cmds:
+      - earthly --artifact +build/* dist/output/ --VERSION=$(git describe --tags --dirty)

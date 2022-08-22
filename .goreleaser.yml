@@ -1,0 +1,26 @@
+project_name: asdf-helper
+before:
+  hooks:
+    - go mod download
+    - go mod tidy -compat=1.17
+    - go generate ./...
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{ if index .Env "GIT_VERSION" }}{{ .Env.GIT_VERSION }}{{ else }}{{ .Version }}{{ end }} -X main.commit={{ if index .Env "GIT_COMMIT" }}{{ .Env.GIT_COMMIT }}{{ else }}{{ .Commit }}{{ end }} -X main.date={{.Date}} -X main.commitTimestamp={{ if index .Env "GIT_COMMIT_TIMESTAMP" }}{{ .Env.GIT_COMMIT_TIMESTAMP }}{{ else }}0{{ end }}
+archives:
+  - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format: zip
+checksum:
+  name_template: 'checksums.txt'
+changelog:
+  skip: true
+release:
+  disable: true
