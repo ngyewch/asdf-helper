@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/denormal/go-gitignore"
 	slog "github.com/go-eden/slf4go"
 	"github.com/ngyewch/asdf-helper/asdf"
 	"github.com/ngyewch/asdf-helper/util"
@@ -28,6 +29,11 @@ func Execute() {
 }
 
 func run(cmd *cobra.Command, args []string) error {
+	ignore, err := gitignore.NewRepository(".")
+	if err != nil {
+		return err
+	}
+
 	helper, err := asdf.NewHelper()
 	if err != nil {
 		return err
@@ -35,6 +41,16 @@ func run(cmd *cobra.Command, args []string) error {
 	err = filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
+		}
+		match := ignore.Relative(path, info.IsDir())
+		if match != nil {
+			if match.Ignore() {
+				if info.IsDir() {
+					return filepath.SkipDir
+				} else {
+					return nil
+				}
+			}
 		}
 		if info.Name() == ".tool-versions" {
 			fmt.Println()

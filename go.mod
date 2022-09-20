@@ -3,6 +3,7 @@ module github.com/ngyewch/asdf-helper
 go 1.19
 
 require (
+	github.com/denormal/go-gitignore v0.0.0-20180930084346-ae8ad1d07817
 	github.com/go-eden/slf4go v1.1.2
 	github.com/ngyewch/go-clibase v1.0.1
 	github.com/spf13/cobra v1.5.0
@@ -11,6 +12,7 @@ require (
 )
 
 require (
+	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-eden/common v0.1.14 // indirect
 	github.com/go-eden/routine v1.0.1 // indirect
