@@ -79,8 +79,9 @@ github.com/fsnotify/fsnotify v1.5.4/go.mod h1:OVB6XrOHzAwXMpEM7uPOzcehqUV2UqJxmV
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-eden/common v0.1.14 h1:QiSxZLFQDXE2F7LX+ZnaiTs15t0n3lfZo5PanIJiv60=
 github.com/go-eden/common v0.1.14/go.mod h1:vcNs8vhRl9/YFxtkgUPbAhTUSt40NcK7bF8d3S3n5sU=
-github.com/go-eden/routine v0.0.1 h1:EFzGtHcxmv2gAcdoG7vMESe+26nuIl0/vTMtc030m/4=
 github.com/go-eden/routine v0.0.1/go.mod h1:R+sklWRKa0GPYXW5Opyr1nSb9KbwpEF9AXBARb7r1XI=
+github.com/go-eden/routine v1.0.1 h1:lPFLu9x7TtkFxO2NU4kTHAs0UztJEOesqosAwPyqwvA=
+github.com/go-eden/routine v1.0.1/go.mod h1:rzXtSZh2h5HQwNsfLgYY4xjtHe3mU6z5T2tzmOxvNRM=
 github.com/go-eden/slf4go v1.1.2 h1:WVl2nVp7GvqvhHGzAXC0u1LTQvn5OgFcfuwmeMok4d8=
 github.com/go-eden/slf4go v1.1.2/go.mod h1:mnVsjQFGLXKKWN6Mb9GREeZ2DOwwmLrb4PsLfTAdkTM=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=

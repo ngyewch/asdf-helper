@@ -1,6 +1,6 @@
 module github.com/ngyewch/asdf-helper
 
-go 1.17
+go 1.19
 
 require (
 	github.com/go-eden/slf4go v1.1.2
@@ -13,7 +13,7 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-eden/common v0.1.14 // indirect
-	github.com/go-eden/routine v0.0.1 // indirect
+	github.com/go-eden/routine v1.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
