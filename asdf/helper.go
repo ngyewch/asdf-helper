@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 type Helper struct {
@@ -97,4 +98,17 @@ func (helper *Helper) Install(name string, version string) error {
 	}
 	fmt.Println(string(combinedOutput))
 	return nil
+}
+
+func (helper *Helper) Latest(name string, prefix string) (string, error) {
+	cmd := exec.Command("asdf", "latest", name, prefix)
+	combinedOutput, err := cmd.CombinedOutput()
+	if (cmd.ProcessState != nil) && (cmd.ProcessState.ExitCode() != 0) {
+		fmt.Printf("exit code = %d\n", cmd.ProcessState.ExitCode())
+	} else {
+		if err != nil {
+			return "", err
+		}
+	}
+	return strings.TrimSpace(string(combinedOutput)), nil
 }
