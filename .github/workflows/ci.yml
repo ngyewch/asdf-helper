@@ -12,19 +12,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: ~1.19
+          go-version: "~1.19"
+
       - name: Run GoReleaser (release)
         uses: goreleaser/goreleaser-action@v3
-        if: startsWith(github.ref, 'refs/tags/')
+        if: "startsWith(github.ref, 'refs/tags/')"
         with:
-          version: ~1.11
+          version: "~1.11"
           args: "release --rm-dist"
+
       - name: Run GoReleaser (snapshot)
         uses: goreleaser/goreleaser-action@v3
-        if: !startsWith(github.ref, 'refs/tags/')
+        if: "!startsWith(github.ref, 'refs/tags/')"
         with:
-          version: ~1.11
+          version: "~1.11"
           args: "build --snapshot --rm-dist"
