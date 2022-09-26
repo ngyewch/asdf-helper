@@ -4,81 +4,125 @@ import (
 	"fmt"
 	"github.com/Masterminds/semver/v3"
 	"github.com/ngyewch/asdf-helper/asdf"
-	"strings"
+	"regexp"
 )
 
+type AsdfVersion struct {
+	Version       string
+	VersionPrefix string
+	VersionNumber string
+}
+
+var (
+	versionPrefixLocatorRegex1 = regexp.MustCompile(`^[0-9]`)
+	versionPrefixLocatorRegex2 = regexp.MustCompile(`-[0-9]`)
+)
+
+func toAsdfVersion(version string) *AsdfVersion {
+	versionPrefixLocation := versionPrefixLocatorRegex1.FindStringIndex(version)
+	if versionPrefixLocation != nil {
+		return &AsdfVersion{
+			Version:       version,
+			VersionPrefix: "",
+			VersionNumber: version,
+		}
+	}
+	versionPrefixLocation = versionPrefixLocatorRegex2.FindStringIndex(version)
+	if versionPrefixLocation != nil {
+		return &AsdfVersion{
+			Version:       version,
+			VersionPrefix: version[0:versionPrefixLocation[0]],
+			VersionNumber: version[versionPrefixLocation[0]+1:],
+		}
+	}
+	return &AsdfVersion{
+		Version:       version,
+		VersionPrefix: "",
+		VersionNumber: version,
+	}
+}
+
+func getAllVersions(asdfHelper *asdf.Helper, name string, versionPrefix string) ([]*AsdfVersion, error) {
+	allVersions := make([]*AsdfVersion, 0)
+	candidateVersions, err := asdfHelper.ListAll(name, versionPrefix)
+	if err != nil {
+		return nil, err
+	}
+	for _, candidateVersion := range candidateVersions {
+		candidateAsdfVersion := toAsdfVersion(candidateVersion)
+		if candidateAsdfVersion.VersionPrefix == versionPrefix {
+			allVersions = append(allVersions, candidateAsdfVersion)
+		}
+	}
+	return allVersions, nil
+}
+
 func Latest(hideLatest bool) error {
-	latestVersionMap := make(map[string]string, 0)
+	allVersionsMap := make(map[string][]*AsdfVersion, 0)
 	return walk(func(asdfHelper *asdf.Helper, name string, version string, constraint string) error {
-		versionPrefix := ""
-		//versionNumber := version
-		if version[0] < '0' || version[0] > '9' {
-			parts := strings.SplitN(version, "-", 2)
-			versionPrefix = parts[0]
-			//versionNumber = parts[1]
-		}
-		key := name
-		if versionPrefix != "" {
-			key = fmt.Sprintf("%s %s", name, versionPrefix)
-		}
-
-		latestVersion := ""
-
+		var c *semver.Constraints = nil
 		if constraint != "" {
-			c, err := semver.NewConstraint(constraint)
+			c1, err := semver.NewConstraint(constraint)
 			if err != nil {
 				fmt.Printf("* %s %s (invalid constraint %s)\n", name, version, constraint)
 				return nil
 			}
-			vers, err := asdfHelper.ListAll(name, versionPrefix)
+			c = c1
+		}
+
+		asdfVersion := toAsdfVersion(version)
+		allVersionsMapKey := name
+		if asdfVersion.VersionPrefix != "" {
+			allVersionsMapKey = fmt.Sprintf("%s %s", name, asdfVersion.VersionPrefix)
+		}
+
+		allVersions, ok := allVersionsMap[allVersionsMapKey]
+		if !ok {
+			allVersions1, err := getAllVersions(asdfHelper, name, asdfVersion.VersionPrefix)
 			if err != nil {
 				return err
 			}
-			for _, ver := range vers {
-				testVer := ver
-				if versionPrefix != "" {
-					parts := strings.SplitN(testVer, "-", 2)
-					testVer = parts[1]
-				}
-				v, err := semver.NewVersion(testVer)
-				if err != nil {
-					//fmt.Printf("! %s -> %s\n", ver, err.Error())
-				} else {
-					if c.Check(v) {
-						//fmt.Printf("+ %s (%s)\n", ver, testVer)
-						latestVersion = ver
+			allVersionsMap[allVersionsMapKey] = allVersions1
+			allVersions = allVersions1
+		}
+
+		var latestVersion *AsdfVersion = nil
+		if (allVersions != nil) && (len(allVersions) > 0) {
+			if c == nil {
+				latestVersion = allVersions[len(allVersions)-1]
+			} else {
+				for _, candidateVersion := range allVersions {
+					v, err := semver.NewVersion(candidateVersion.VersionNumber)
+					if err != nil {
+						//fmt.Printf("! %s -> %s\n", ver, err.Error())
 					} else {
-						//fmt.Printf("- %s\n", ver)
+						if c.Check(v) {
+							//fmt.Printf("+ %s (%s)\n", ver, testVer)
+							latestVersion = candidateVersion
+						} else {
+							//fmt.Printf("- %s\n", ver)
+						}
 					}
 				}
 			}
-			// TODO
-		} else {
-			cachedLatestVersion, ok := latestVersionMap[key]
-			if !ok {
-				ver, err := asdfHelper.Latest(name, versionPrefix)
-				if err != nil {
-					return err
-				}
-				latestVersion = ver
-				latestVersionMap[key] = latestVersion
-			} else {
-				latestVersion = cachedLatestVersion
-			}
 		}
 
-		if latestVersion == "" {
+		if latestVersion == nil {
 			fmt.Printf("* %s %s (?)\n", name, version)
-		} else if version == latestVersion {
+		} else if version == latestVersion.Version {
 			if !hideLatest {
-				if constraint != "" {
+				if c != nil {
 					fmt.Printf("* %s %s (latest %s)\n", name, version, constraint)
 				} else {
 					fmt.Printf("* %s %s (latest)\n", name, version)
 				}
 			}
 		} else {
-			fmt.Printf("* %s %s => %s\n", name, version, latestVersion)
+			if c != nil {
+				fmt.Printf("* %s %s => %s (constraint %s)\n", name, version, latestVersion.Version, constraint)
+			} else {
+				fmt.Printf("* %s %s => %s\n", name, version, latestVersion.Version)
+			}
 		}
 		return nil
 	})
