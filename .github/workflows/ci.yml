@@ -21,10 +21,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           version: ~1.11
-          args: release --rm-dist
+          args: "release --rm-dist"
       - name: Run GoReleaser (snapshot)
         uses: goreleaser/goreleaser-action@v3
         if: !startsWith(github.ref, 'refs/tags/')
         with:
           version: ~1.11
-          args: build --snapshot --rm-dist
+          args: "build --snapshot --rm-dist"
