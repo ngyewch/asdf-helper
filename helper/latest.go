@@ -37,8 +37,8 @@ func toAsdfVersion(version string) *AsdfVersion {
 	}
 	return &AsdfVersion{
 		Version:       version,
-		VersionPrefix: "",
-		VersionNumber: version,
+		VersionPrefix: version,
+		VersionNumber: "",
 	}
 }
 
