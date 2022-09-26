@@ -31,4 +31,4 @@ jobs:
         if: "!startsWith(github.ref, 'refs/tags/')"
         with:
           version: "~1.11"
-          args: "build --snapshot --rm-dist"
+          args: "build --snapshot --rm-dist --single-target"
