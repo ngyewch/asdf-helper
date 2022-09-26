@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Latest() error {
+func Latest(hideLatest bool) error {
 	latestVersionMap := make(map[string]string, 0)
 	return walk(func(asdfHelper *asdf.Helper, name string, version string, constraint string) error {
 		versionPrefix := ""
@@ -70,10 +70,12 @@ func Latest() error {
 		if latestVersion == "" {
 			fmt.Printf("* %s %s (?)\n", name, version)
 		} else if version == latestVersion {
-			if constraint != "" {
-				fmt.Printf("* %s %s (latest %s)\n", name, version, constraint)
-			} else {
-				fmt.Printf("* %s %s (latest)\n", name, version)
+			if !hideLatest {
+				if constraint != "" {
+					fmt.Printf("* %s %s (latest %s)\n", name, version, constraint)
+				} else {
+					fmt.Printf("* %s %s (latest)\n", name, version)
+				}
 			}
 		} else {
 			fmt.Printf("* %s %s => %s\n", name, version, latestVersion)
