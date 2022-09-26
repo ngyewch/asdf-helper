@@ -1,5 +1,9 @@
 # asdf-helper
 
+![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/ngyewch/asdf-helper)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ngyewch/asdf-helper/CI)
+
+
 Helper tool for [asdf](https://asdf-vm.com/).
 
 ## Features
