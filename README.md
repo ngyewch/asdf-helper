@@ -28,7 +28,7 @@ earthly https://github.com/YR-ZR0/asdf-earthly
 asdf-helper latest
 ```
 
-Version constraints can be specified in `.tool-versions`.
+Version constraints can be specified in `.tool-versions`. See https://github.com/Masterminds/semver for more details.
 
 ```
 nodejs 16.17.1 # (constraint ^16)
