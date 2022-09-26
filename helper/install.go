@@ -6,7 +6,7 @@ import (
 )
 
 func Install() error {
-	return walk(func(asdfHelper *asdf.Helper, name string, version string) error {
+	return walk(func(asdfHelper *asdf.Helper, name string, version string, constraint string) error {
 		hasInstall, err := asdfHelper.CheckInstall(name, version)
 		if err != nil {
 			return err

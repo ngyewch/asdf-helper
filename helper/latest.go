@@ -2,13 +2,14 @@ package helper
 
 import (
 	"fmt"
+	"github.com/Masterminds/semver/v3"
 	"github.com/ngyewch/asdf-helper/asdf"
 	"strings"
 )
 
 func Latest() error {
 	latestVersionMap := make(map[string]string, 0)
-	return walk(func(asdfHelper *asdf.Helper, name string, version string) error {
+	return walk(func(asdfHelper *asdf.Helper, name string, version string, constraint string) error {
 		versionPrefix := ""
 		//versionNumber := version
 		if version[0] < '0' || version[0] > '9' {
@@ -20,17 +21,60 @@ func Latest() error {
 		if versionPrefix != "" {
 			key = fmt.Sprintf("%s %s", name, versionPrefix)
 		}
-		latestVersion, ok := latestVersionMap[key]
-		if !ok {
-			ver, err := asdfHelper.Latest(name, versionPrefix)
+
+		latestVersion := ""
+
+		if constraint != "" {
+			c, err := semver.NewConstraint(constraint)
+			if err != nil {
+				fmt.Printf("* %s %s (invalid constraint %s)\n", name, version, constraint)
+				return nil
+			}
+			vers, err := asdfHelper.ListAll(name, versionPrefix)
 			if err != nil {
 				return err
 			}
-			latestVersion = ver
-			latestVersionMap[key] = latestVersion
+			for _, ver := range vers {
+				testVer := ver
+				if versionPrefix != "" {
+					parts := strings.SplitN(testVer, "-", 2)
+					testVer = parts[1]
+				}
+				v, err := semver.NewVersion(testVer)
+				if err != nil {
+					//fmt.Printf("! %s -> %s\n", ver, err.Error())
+				} else {
+					if c.Check(v) {
+						//fmt.Printf("+ %s (%s)\n", ver, testVer)
+						latestVersion = ver
+					} else {
+						//fmt.Printf("- %s\n", ver)
+					}
+				}
+			}
+			// TODO
+		} else {
+			cachedLatestVersion, ok := latestVersionMap[key]
+			if !ok {
+				ver, err := asdfHelper.Latest(name, versionPrefix)
+				if err != nil {
+					return err
+				}
+				latestVersion = ver
+				latestVersionMap[key] = latestVersion
+			} else {
+				latestVersion = cachedLatestVersion
+			}
 		}
-		if version == latestVersion {
-			fmt.Printf("* %s %s (latest)\n", name, version)
+
+		if latestVersion == "" {
+			fmt.Printf("* %s %s (?)\n", name, version)
+		} else if version == latestVersion {
+			if constraint != "" {
+				fmt.Printf("* %s %s (latest %s)\n", name, version, constraint)
+			} else {
+				fmt.Printf("* %s %s (latest)\n", name, version)
+			}
 		} else {
 			fmt.Printf("* %s %s => %s\n", name, version, latestVersion)
 		}

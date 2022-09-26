@@ -8,18 +8,25 @@ import (
 	"strings"
 )
 
-func Scan(r io.Reader, lineHandler func(line string) error) error {
+func Scan(r io.Reader, lineHandler func(line string, comment string) error) error {
+	spaceRegex := regexp.MustCompile(`\s+`)
+	commentRegex := regexp.MustCompile(`#+`)
+
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
-		idx := strings.Index(line, "#")
-		if idx >= 0 {
-			line = line[0:idx]
+		comment := ""
+		commentStartLocation := commentRegex.FindStringIndex(line)
+		if commentStartLocation != nil {
+			orgLine := line
+			comment = orgLine[commentStartLocation[0]:]
+			line = orgLine[0:commentStartLocation[0]]
 		}
-		space := regexp.MustCompile(`\s+`)
-		line = space.ReplaceAllString(line, " ")
+		line = spaceRegex.ReplaceAllString(line, " ")
 		line = strings.TrimSpace(line)
-		err := lineHandler(line)
+		//comment = commentRegex.ReplaceAllString(comment, "")
+		comment = strings.TrimSpace(comment)
+		err := lineHandler(line, comment)
 		if err != nil {
 			return err
 		}
@@ -31,7 +38,7 @@ func Scan(r io.Reader, lineHandler func(line string) error) error {
 	return nil
 }
 
-func ScanFile(filename string, lineHandler func(line string) error) error {
+func ScanFile(filename string, lineHandler func(line string, comment string) error) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err

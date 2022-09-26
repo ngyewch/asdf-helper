@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -111,4 +112,18 @@ func (helper *Helper) Latest(name string, prefix string) (string, error) {
 		}
 	}
 	return strings.TrimSpace(string(combinedOutput)), nil
+}
+
+func (helper *Helper) ListAll(name string, prefix string) ([]string, error) {
+	cmd := exec.Command("asdf", "list", "all", name, prefix)
+	combinedOutput, err := cmd.CombinedOutput()
+	if (cmd.ProcessState != nil) && (cmd.ProcessState.ExitCode() != 0) {
+		fmt.Printf("exit code = %d\n", cmd.ProcessState.ExitCode())
+	} else {
+		if err != nil {
+			return nil, err
+		}
+	}
+	re := regexp.MustCompile(`\r?\n`)
+	return re.Split(strings.TrimSpace(string(combinedOutput)), -1), nil
 }
