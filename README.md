@@ -1,10 +1,15 @@
 # asdf-helper
 
+[![Build](https://github.com/ngyewch/asdf-helper/actions/workflows/build.yml/badge.svg)](https://github.com/ngyewch/asdf-helper/actions/workflows/build.yml)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/ngyewch/asdf-helper)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ngyewch/asdf-helper/CI)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ngyewch/asdf-helper/build)
 
 
 Helper tool for [asdf](https://asdf-vm.com/).
+
+## Installation
+
+asdf-helper can be installed via [asdf](https://asdf-vm.com/). See https://github.com/ngyewch/asdf-helper-plugin
 
 ## Features
 
