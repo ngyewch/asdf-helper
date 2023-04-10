@@ -1,4 +1,4 @@
-version: '3'
+version: 3
 
 tasks:
   clean:
@@ -9,7 +9,7 @@ tasks:
   build:
     desc: Build
     cmds:
-      - goreleaser --snapshot --rm-dist
+      - goreleaser --snapshot --clean
 
   dependencyUpdates:
     desc: Show dependency updates
