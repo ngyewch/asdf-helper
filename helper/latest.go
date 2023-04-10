@@ -4,78 +4,26 @@ import (
 	"fmt"
 	"github.com/Masterminds/semver/v3"
 	"github.com/ngyewch/asdf-helper/asdf"
-	"regexp"
-	"strings"
 )
 
-type AsdfVersion struct {
-	Version       string
-	VersionPrefix string
-	VersionNumber string
-}
-
-var (
-	versionPrefixLocatorRegex1 = regexp.MustCompile(`^[0-9]`)
-	versionPrefixLocatorRegex2 = regexp.MustCompile(`-[0-9]`)
-)
-
-func toAsdfVersion(version string) *AsdfVersion {
-	versionPrefixLocation := versionPrefixLocatorRegex1.FindStringIndex(version)
-	if versionPrefixLocation != nil {
-		return &AsdfVersion{
-			Version:       version,
-			VersionPrefix: "",
-			VersionNumber: version,
-		}
-	}
-	versionPrefixLocation = versionPrefixLocatorRegex2.FindStringIndex(version)
-	if versionPrefixLocation != nil {
-		return &AsdfVersion{
-			Version:       version,
-			VersionPrefix: version[0:versionPrefixLocation[0]],
-			VersionNumber: version[versionPrefixLocation[0]+1:],
-		}
-	}
-	return &AsdfVersion{
-		Version:       version,
-		VersionPrefix: version,
-		VersionNumber: "",
-	}
-}
-
-func getAllVersions(asdfHelper *asdf.Helper, name string, versionPrefix string, excludes []string) ([]*AsdfVersion, error) {
-	allVersions := make([]*AsdfVersion, 0)
+func getAllVersions(asdfHelper *asdf.Helper, name string, versionPrefix string, includePrereleases bool) ([]*AsdfVersion, error) {
 	candidateVersions, err := asdfHelper.ListAll(name, versionPrefix)
 	if err != nil {
 		return nil, err
 	}
+	allVersions := make([]*AsdfVersion, 0)
 	for _, candidateVersion := range candidateVersions {
-		candidateAsdfVersion := toAsdfVersion(candidateVersion)
-		if candidateAsdfVersion.VersionPrefix == versionPrefix {
-			v, _ := semver.NewVersion(candidateAsdfVersion.VersionNumber)
-			if v != nil {
-				if v.Prerelease() != "" {
-					continue
-				}
-			} else {
-				excludeVersion := false
-				for _, exclude := range excludes {
-					if strings.Contains(candidateAsdfVersion.VersionNumber, exclude) {
-						excludeVersion = true
-						break
-					}
-				}
-				if excludeVersion {
-					continue
-				}
+		candidateAsdfVersion := NewAsdfVersion(candidateVersion)
+		if (candidateAsdfVersion.VersionPrefix == versionPrefix) && candidateAsdfVersion.Valid() {
+			if includePrereleases || (candidateAsdfVersion.SemVer.Prerelease() == "") {
+				allVersions = append(allVersions, candidateAsdfVersion)
 			}
-			allVersions = append(allVersions, candidateAsdfVersion)
 		}
 	}
 	return allVersions, nil
 }
 
-func Latest(hideLatest bool, excludes []string) error {
+func Latest(hideLatest bool, includePrereleases bool) error {
 	allVersionsMap := make(map[string][]*AsdfVersion, 0)
 	return walk(func(asdfHelper *asdf.Helper, name string, version string, constraint string) error {
 		var c *semver.Constraints = nil
@@ -88,7 +36,7 @@ func Latest(hideLatest bool, excludes []string) error {
 			c = c1
 		}
 
-		asdfVersion := toAsdfVersion(version)
+		asdfVersion := NewAsdfVersion(version)
 		allVersionsMapKey := name
 		if asdfVersion.VersionPrefix != "" {
 			allVersionsMapKey = fmt.Sprintf("%s %s", name, asdfVersion.VersionPrefix)
@@ -96,7 +44,7 @@ func Latest(hideLatest bool, excludes []string) error {
 
 		allVersions, ok := allVersionsMap[allVersionsMapKey]
 		if !ok {
-			allVersions1, err := getAllVersions(asdfHelper, name, asdfVersion.VersionPrefix, excludes)
+			allVersions1, err := getAllVersions(asdfHelper, name, asdfVersion.VersionPrefix, includePrereleases)
 			if err != nil {
 				return err
 			}
@@ -105,22 +53,13 @@ func Latest(hideLatest bool, excludes []string) error {
 		}
 
 		var latestVersion *AsdfVersion = nil
-		if (allVersions != nil) && (len(allVersions) > 0) {
-			if c == nil {
-				latestVersion = allVersions[len(allVersions)-1]
-			} else {
-				for _, candidateVersion := range allVersions {
-					v, err := semver.NewVersion(candidateVersion.VersionNumber)
-					if err != nil {
-						//fmt.Printf("! %s -> %s\n", v, err.Error())
-					} else {
-						if c.Check(v) {
-							//fmt.Printf("+ %s (%s)\n", v, c)
-							latestVersion = candidateVersion
-						} else {
-							//fmt.Printf("- %s\n", v)
-						}
-					}
+		for _, candidateVersion := range allVersions {
+			if candidateVersion.Valid() {
+				if candidateVersion.CheckConstraints(c) && ((latestVersion == nil) || candidateVersion.SemVer.GreaterThan(latestVersion.SemVer)) {
+					//fmt.Printf("[%s] + %s (%s)\n", name, candidateVersion.SemVer, c)
+					latestVersion = candidateVersion
+				} else {
+					//fmt.Printf("[%s] - %s (%s)\n", name, candidateVersion.SemVer, c)
 				}
 			}
 		}

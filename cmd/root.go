@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	slog "github.com/go-eden/slf4go"
 	"github.com/ngyewch/go-clibase"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	goVersion "go.hein.dev/go-version"
 	"os"
 )
@@ -29,26 +27,11 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().String("config", "", "config file")
-	rootCmd.PersistentFlags().String("log-level", DefaultLogLevel, "log level")
-
-	_ = viper.BindPFlag(ConfigLogLevel, rootCmd.Flag("log-level"))
-
 	clibase.AddVersionCmd(rootCmd, func() *goVersion.Info {
 		return VersionInfo
 	})
 }
 
 func initConfig() {
-	cfgFile, err := rootCmd.PersistentFlags().GetString("config")
-	if cfgFile != "" && err == nil {
-		viper.SetConfigFile(cfgFile)
-		err := viper.ReadInConfig()
-		if err != nil {
-			log.Warnf("error reading config file: %s", err)
-		}
-	}
-
-	logLevel := viper.GetString(ConfigLogLevel)
-	slog.SetLevel(clibase.ToSlogLevel(logLevel, slog.InfoLevel))
+	// do nothing
 }

@@ -18,17 +18,17 @@ func latest(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	excludes, err := cmd.Flags().GetStringArray("excludes")
+	includePrereleases, err := cmd.Flags().GetBool("include-prereleases")
 	if err != nil {
 		return err
 	}
 
-	return helper.Latest(hideLatest, excludes)
+	return helper.Latest(hideLatest, includePrereleases)
 }
 
 func init() {
 	latestCmd.Flags().Bool("hide-latest", false, "do not print tools already at the latest version")
-	latestCmd.Flags().StringArray("excludes", []string{"alpha", "beta", "rc"}, "exclude substrings")
+	latestCmd.Flags().Bool("include-prereleases", false, "include prereleases")
 
 	rootCmd.AddCommand(latestCmd)
 }
