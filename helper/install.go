@@ -18,6 +18,13 @@ func Install() error {
 			if err != nil {
 				return err
 			}
+			hasInstall, err := asdfHelper.CheckInstall(name, version)
+			if err != nil {
+				return err
+			}
+			if !hasInstall {
+				return fmt.Errorf("failed to install %s %s", name, version)
+			}
 		}
 		return nil
 	})
