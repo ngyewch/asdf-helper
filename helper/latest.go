@@ -2,6 +2,7 @@ package helper
 
 import (
 	"fmt"
+
 	"github.com/Masterminds/semver/v3"
 	"github.com/ngyewch/asdf-helper/asdf"
 )
@@ -23,9 +24,9 @@ func getAllVersions(asdfHelper *asdf.Helper, name string, versionPrefix string, 
 	return allVersions, nil
 }
 
-func Latest(hideLatest bool, includePrereleases bool) error {
+func Latest(hideLatest bool, includePrereleases bool, recursive bool) error {
 	allVersionsMap := make(map[string][]*AsdfVersion, 0)
-	return walk(func(asdfHelper *asdf.Helper, name string, version string, constraint string) error {
+	return walk(recursive, func(asdfHelper *asdf.Helper, name string, version string, constraint string) error {
 		var c *semver.Constraints = nil
 		if constraint != "" {
 			c1, err := semver.NewConstraint(constraint)
