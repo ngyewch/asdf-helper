@@ -6,8 +6,8 @@ import (
 	"github.com/ngyewch/asdf-helper/asdf"
 )
 
-func Install(nonRecursive bool) error {
-	return walk(nonRecursive, func(asdfHelper *asdf.Helper, name string, version string, constraint string) error {
+func Install(recursive bool) error {
+	return walk(recursive, func(asdfHelper *asdf.Helper, name string, version string, constraint string) error {
 		hasInstall, err := asdfHelper.CheckInstall(name, version)
 		if err != nil {
 			return err
