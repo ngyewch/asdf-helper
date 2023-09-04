@@ -2,16 +2,17 @@ package helper
 
 import (
 	"fmt"
-	"github.com/denormal/go-gitignore"
-	"github.com/ngyewch/asdf-helper/asdf"
-	"github.com/ngyewch/asdf-helper/util"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/denormal/go-gitignore"
+	"github.com/ngyewch/asdf-helper/asdf"
+	"github.com/ngyewch/asdf-helper/util"
 )
 
-func walk(handler func(asdfHelper *asdf.Helper, name string, version string, constraint string) error) error {
+func walk(recursive bool, handler func(asdfHelper *asdf.Helper, name string, version string, constraint string) error) error {
 	ignore, err := gitignore.NewRepository(".")
 	if err != nil {
 		return err
@@ -27,6 +28,11 @@ func walk(handler func(asdfHelper *asdf.Helper, name string, version string, con
 		if err != nil {
 			return err
 		}
+
+		if path != "." && info.IsDir() && !recursive {
+			return filepath.SkipDir
+		}
+
 		match := ignore.Relative(path, info.IsDir())
 		if match != nil {
 			if match.Ignore() {

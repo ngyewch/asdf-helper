@@ -13,9 +13,15 @@ var (
 )
 
 func install(cmd *cobra.Command, args []string) error {
-	return helper.Install()
+	recursive, err := cmd.Flags().GetBool("recursive")
+	if err != nil {
+		return err
+	}
+
+	return helper.Install(recursive)
 }
 
 func init() {
+	installCmd.Flags().Bool("recursive", true, "run recursively")
 	rootCmd.AddCommand(installCmd)
 }

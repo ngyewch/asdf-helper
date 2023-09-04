@@ -23,12 +23,18 @@ func latest(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return helper.Latest(hideLatest, includePrereleases)
+	recursive, err := cmd.Flags().GetBool("recursive")
+	if err != nil {
+		return err
+	}
+
+	return helper.Latest(hideLatest, includePrereleases, recursive)
 }
 
 func init() {
 	latestCmd.Flags().Bool("hide-latest", false, "do not print tools already at the latest version")
 	latestCmd.Flags().Bool("include-prereleases", false, "include prereleases")
+	latestCmd.Flags().Bool("recursive", true, "run recursively")
 
 	rootCmd.AddCommand(latestCmd)
 }
